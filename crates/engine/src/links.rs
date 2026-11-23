@@ -1,16 +1,24 @@
-//! Where PdfCraft and the ArtCraft community live on the web. One table, so the Help menu, the
-//! About dialog, the home screen, the CLI and the README agree.
+//! Where this build and the project it is based on live on the web. One table, so the Help menu,
+//! the About dialog, the CLI and the README agree.
+//!
+//! This is a modified version of PdfCraft. The ArtCraft name and marks are not used in it
+//! (docs/brand/LICENSE-brand.txt in PdfCraft); it says in plain text that it is based on PdfCraft.
 
 use icu_properties::props::Script;
 use std::path::{Path, PathBuf};
 
-/// The app's name in ArtCraft URLs (`getartcraft.com/apps/{APP}`, `github.com/storytold/{APP}`).
+/// The name people see for this build: window title, menus, About, installer. Change it here.
+pub const BRAND: &str = "OfficePDF";
+
+/// The repository's name on GitHub.
 pub const APP: &str = "pdfcraft";
 
-pub const DISCORD: &str = "https://discord.gg/artcraft";
-pub const WEBSITE: &str = "https://getartcraft.com";
-pub const APP_PAGE: &str = "https://getartcraft.com/apps/pdfcraft";
-pub const GITHUB: &str = "https://github.com/storytold/pdfcraft";
+/// This build's own source.
+pub const GITHUB: &str = "https://github.com/chanit20052005-ctrl/pdfcraft";
+/// The project this build is based on.
+pub const UPSTREAM: &str = "https://github.com/storytold/pdfcraft";
+/// The page shown as this build's home page (installer, MCP server info).
+pub const APP_PAGE: &str = GITHUB;
 
 /// A link and the registry command that opens it.
 #[derive(Clone, Copy, Debug)]
@@ -22,12 +30,10 @@ pub struct Link {
     pub icon: &'static str,
 }
 
-/// In the order they are shown. Discord comes first: it is where people get help fastest.
+/// In the order they are shown.
 pub const LINKS: &[Link] = &[
-    Link { command: "help.discord", label: "Join the ArtCraft Discord", url: DISCORD, icon: "messages-square" },
-    Link { command: "help.app_page", label: "PdfCraft web page", url: APP_PAGE, icon: "globe" },
-    Link { command: "help.github", label: "PdfCraft on GitHub", url: GITHUB, icon: "code-xml" },
-    Link { command: "help.website", label: "ArtCraft website", url: WEBSITE, icon: "external-link" },
+    Link { command: "help.github", label: "Source code on GitHub", url: GITHUB, icon: "code-xml" },
+    Link { command: "help.app_page", label: "Based on PdfCraft", url: UPSTREAM, icon: "external-link" },
 ];
 
 pub fn for_command(id: &str) -> Option<&'static Link> {
