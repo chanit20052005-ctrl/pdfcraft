@@ -1,0 +1,78 @@
+name: OfficePDF web build
+
+# Builds the browser version of this fork and keeps the zip as a workflow artifact.
+# Run it from the Actions tab (Run workflow). Tick "deploy" to also publish the site to
+# GitHub Pages (Settings > Pages > Source: GitHub Actions must be set once first).
+on:
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: "Also publish to GitHub Pages"
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: officepdf-web
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      CARGO_TERM_COLOR: always
+      CARGO_INCREMENTAL: 0
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Rust with the wasm target
+        run: |
+          rustup toolchain install stable --profile minimal --target wasm32-unknown-unknown
+          rustup default stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: officepdf-web
+      - uses: storytold/craft-common-actions/actions/install-trunk@main
+        with:
+          trunk-version: "0.21.14"
+      # Same craft-fonts commit as ci.yml and release.yml: brings the Thai face the web build embeds.
+      - uses: storytold/craft-common-actions/actions/checkout-craft-fonts@main
+        with:
+          ref: b076417b5880bd4154bd22f00695b1d28c6bea83
+      - uses: storytold/craft-common-actions/actions/checkout-craft-i18n@main
+      - name: Build and zip
+        env:
+          CRAFT_FONTS_DIR: ${{ github.workspace }}/craft-fonts
+          CRAFT_FONTS_REQUIRED: "1"
+        run: packaging/web/package.sh
+      - name: Unpack the site for Pages
+        run: |
+          mkdir -p site
+          unzip -q dist/release/pdfcraft-web-*.zip -d site-unzipped
+          cp -R site-unzipped/pdfcraft-web-*/. site/
+      - uses: actions/upload-artifact@v4
+        with:
+          name: OfficePDF-Web
+          path: dist/release/pdfcraft-web-*.zip
+          if-no-files-found: error
+      - uses: actions/upload-pages-artifact@v3
+        if: inputs.deploy
+        with:
+          path: site
+
+  deploy:
+    if: inputs.deploy
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
