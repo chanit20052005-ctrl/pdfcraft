@@ -2,12 +2,17 @@ name: OfficePDF Windows build
 
 # Builds the Windows desktop version of this fork (x64) and keeps the portable zip as a
 # workflow artifact: unzip it and run pdfcraft.exe, no installation needed.
-# Run it from the Actions tab (Run workflow).
+# Runs by itself after every push to main, and can also be run from the Actions tab.
 #
 # The MSI that package.ps1 also builds is not kept: its install folder and policy still use the
 # ArtCraft suite folder, which a modified version must not use. The build is not code-signed
 # (no signing secrets here), so Windows may show "Windows protected your PC" on first start.
 on:
+  push:
+    branches: [main]
+    paths-ignore:
+      - "**.md"
+      - "docs/**"
   workflow_dispatch:
 
 permissions:
